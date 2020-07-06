@@ -460,6 +460,24 @@ func (a *API) createImage(params *ec2.RegisterImageInput) (string, error) {
 	return imageID, nil
 }
 
+func (a *API) GrantVolumePermission(snapshotID string, userIDs []string) error {
+	arg := &ec2.ModifySnapshotAttributeInput{
+		Attribute:              aws.String("createVolumePermission"),
+		SnapshotId:             aws.String(snapshotID),
+		CreateVolumePermission: &ec2.CreateVolumePermissionModifications{},
+	}
+	for _, userID := range userIDs {
+		arg.CreateVolumePermission.Add = append(arg.CreateVolumePermission.Add, &ec2.CreateVolumePermission{
+			UserId: aws.String(userID),
+		})
+	}
+	_, err := a.ec2.ModifySnapshotAttribute(arg)
+	if err != nil {
+		return fmt.Errorf("couldn't grant snapshot volume permission: %v", err)
+	}
+	return nil
+}
+
 func (a *API) GrantLaunchPermission(imageID string, userIDs []string) error {
 	arg := &ec2.ModifyImageAttributeInput{
 		Attribute:        aws.String("launchPermission"),
