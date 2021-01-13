@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+
+	"github.com/coreos/gangplank/errors"
 )
 
 var (
@@ -29,17 +31,17 @@ func ocpBuildClient() error {
 	// Use the OpenShift API to parse the build meta-data.
 	envVarBuild, okay := os.LookupEnv("BUILD")
 	if !okay {
-		return ErrNoOCPBuildSpec
+		return errors.ErrNoOCPBuildSpec
 	}
 	cfg := &buildapiv1.Build{}
 	obj, _, err := buildJSONCodec.Decode([]byte(envVarBuild), nil, cfg)
 	if err != nil {
-		return ErrNoOCPBuildSpec
+		return errors.ErrNoOCPBuildSpec
 	}
 	ok := false
 	apiBuild, ok = obj.(*buildapiv1.Build)
 	if !ok {
-		return ErrNoOCPBuildSpec
+		return errors.ErrNoOCPBuildSpec
 	}
 
 	// Check to make sure that this is actually on an OpenShift build node.

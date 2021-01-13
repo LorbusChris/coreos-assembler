@@ -23,16 +23,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
 	"github.com/coreos/gangplank/spec"
 )
 
 var (
-	// srvBucket is the name of the bucket to use for remote
-	// files being served up
-	srvBucket = "source"
-
-	// buildConfigs is a builder.
+	// buildConfig is a builder.
 	_ = Builder(&buildConfig{})
 )
 
@@ -67,7 +64,7 @@ func newBC(ctx context.Context, c *clustercontext.Cluster) (*buildConfig, error)
 	var v buildConfig
 	rv := reflect.TypeOf(v)
 	for i := 0; i < rv.NumField(); i++ {
-		tag := rv.Field(i).Tag.Get(ocpStructTag)
+		tag := rv.Field(i).Tag.Get(constants.OcpStructTag)
 		if tag == "" {
 			continue
 		}
@@ -248,7 +245,7 @@ binary build interface.`)
 		// Include the base builds.json and meta.json.
 		if buildID != "" {
 			mPath := filepath.Join(buildID, cosa.CosaMetaJSON)
-			for _, k := range []string{mPath, cosa.CosaBuildsJSON} {
+			for _, k := range []string{mPath, constants.CosaBuildsJSON} {
 				ws.RemoteFiles = append(ws.RemoteFiles, &RemoteFile{
 					Bucket: "builds",
 					Minio:  m,
@@ -367,7 +364,7 @@ func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
 	foundScripts, _ := filepath.Glob("*.cosa.sh")
 	for _, s := range foundScripts {
 		dn := filepath.Base(s)
-		destPath := filepath.Join(cosaSrvDir, srvBucket, dn)
+		destPath := filepath.Join(cosaSrvDir, constants.SourceSubPath, dn)
 		if err := copyFile(s, destPath); err != nil {
 			return remoteFiles, err
 		}
@@ -379,7 +376,7 @@ func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
 		remoteFiles = append(
 			remoteFiles,
 			&RemoteFile{
-				Bucket: srvBucket,
+				Bucket: constants.SourceSubPath,
 				Object: dn,
 				Minio:  m,
 			},
@@ -388,7 +385,7 @@ func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
 		// Add the script to the command interface.
 		scripts = append(
 			scripts,
-			fmt.Sprintf(sPrefix, filepath.Join(cosaSrvDir, srvBucket, dn)),
+			fmt.Sprintf(sPrefix, filepath.Join(cosaSrvDir, constants.SourceSubPath, dn)),
 		)
 	}
 	if len(scripts) > 0 {

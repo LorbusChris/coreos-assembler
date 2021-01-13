@@ -24,21 +24,6 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-
-	"github.com/pkg/errors"
-)
-
-var (
-	// ErrMetaFailsValidation is thrown on reading and invalid meta.json
-	ErrMetaFailsValidation = errors.New("meta.json failed schema validation")
-
-	// ErrMetaNotFound is thrown when a meta.json cannot be found
-	ErrMetaNotFound = errors.New("meta.json was not found")
-)
-
-const (
-	// CosaMetaJSON is the meta.json file
-	CosaMetaJSON = "meta.json"
 )
 
 // BuilderArch converts the GOARCH to the build arch.
@@ -63,7 +48,7 @@ func ReadBuild(dir, buildID, arch string) (*Build, string, error) {
 		if err == nil {
 			latest, ok := b.getLatest(arch)
 			if !ok {
-				return nil, "", ErrNoBuildsFound
+				return nil, "", errors.ErrNoBuildsFound
 			}
 			buildID = latest
 		}
@@ -91,7 +76,7 @@ func buildParser(r io.Reader) (*Build, error) {
 		return nil, errors.Wrapf(err, "failed to parse build")
 	}
 	if errs := cosaBuild.Validate(); len(errs) > 0 {
-		return nil, errors.Wrapf(ErrMetaFailsValidation, "%v", errs)
+		return nil, errors.Wrapf(errors.ErrMetaFailsValidation, "%v", errs)
 	}
 	return cosaBuild, nil
 }

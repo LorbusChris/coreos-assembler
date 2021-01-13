@@ -14,7 +14,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/errors"
 	"github.com/coreos/gangplank/spec"
 )
 
@@ -43,7 +45,7 @@ const (
 func newWorkSpec(ctx clustercontext.ClusterContext) (*workSpec, error) {
 	w, ok := os.LookupEnv(CosaWorkPodEnvVarName)
 	if !ok {
-		return nil, ErrNotWorkPod
+		return nil, errors.ErrNotWorkPod
 	}
 	r := strings.NewReader(w)
 	ws := workSpec{}
@@ -113,7 +115,7 @@ func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 
 	// Setup the incluster client
 	ac, pn, err := clustercontext.K8sInClusterClient()
-	if err == ErrNotInCluster {
+	if err == errors.ErrNotInCluster {
 		log.Info("Worker is out-of-clstuer, no secrets will be available")
 	} else if err != nil {
 		return fmt.Errorf("failed create a kubernetes client: %w", err)
@@ -153,7 +155,7 @@ func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 		bc := apiBuild.Annotations[buildapiv1.BuildConfigAnnotation]
 		bn := apiBuild.Annotations[buildapiv1.BuildNumberAnnotation]
 		log.Infof("Worker is part of buildconfig.openshift.io/%s-%s", bc, bn)
-		if err := cosaInit(); err != nil && err != ErrNoSourceInput {
+		if err := cosaInit(); err != nil && err != errors.ErrNoSourceInput {
 			return fmt.Errorf("failed to clone recipe: %w", err)
 		}
 	} else {

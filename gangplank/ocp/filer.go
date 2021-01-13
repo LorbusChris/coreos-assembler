@@ -20,6 +20,8 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/constants"
 )
 
 /*
@@ -35,11 +37,6 @@ import (
 var (
 	// myHostName used for determining the hostname
 	myHostName string
-)
-
-const (
-	// MinioRegion is a "fake" region
-	MinioRegion = "darkarts-1"
 )
 
 func init() {
@@ -75,7 +72,7 @@ func newMinioServer() *minioServer {
 		minioOptions: minio.Options{
 			Creds:  credentials.NewStaticV4(minioAccessKey, minioSecretKey, ""),
 			Secure: false,
-			Region: MinioRegion,
+			Region: constants.MinioRegion,
 		},
 	}
 }
@@ -86,7 +83,7 @@ func (m *minioServer) client() (*minio.Client, error) {
 		&minio.Options{
 			Creds:  credentials.NewStaticV4(m.AccessKey, m.SecretKey, ""),
 			Secure: false,
-			Region: MinioRegion,
+			Region: constants.MinioRegion,
 		},
 	)
 }
@@ -209,7 +206,7 @@ func (m *minioServer) ensureBucketExists(ctx context.Context, bucket string) err
 		return nil
 	}
 
-	err = mc.MakeBucket(ctx, bucket, minio.MakeBucketOptions{Region: MinioRegion})
+	err = mc.MakeBucket(ctx, bucket, minio.MakeBucketOptions{Region: constants.MinioRegion})
 	if err != nil {
 		return fmt.Errorf("failed call to create bucket: %w", err)
 	}

@@ -36,6 +36,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 
 	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/constants"
 )
 
 const (
@@ -145,7 +146,7 @@ func NewCosaPodder(
 		volumeMounts: volumeMounts,
 	}
 
-	ac, _, err := GetClient(ctx)
+	ac, _, err := clustercontext.GetClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -545,7 +546,7 @@ func podmanRunner(ctx clustercontext.ClusterContext, cp *cosaPod, envVars []v1.E
 	}
 
 	s := specgen.NewSpecGenerator(podSpec.Spec.Containers[0].Image)
-	s.CapAdd = podmanCaps
+	s.CapAdd = constants.PodmanCaps
 	s.Name = podSpec.Name
 	s.Entrypoint = []string{"/usr/bin/dumb-init", "/usr/bin/gangplank", "builder"}
 	s.ContainerNetworkConfig = specgen.ContainerNetworkConfig{

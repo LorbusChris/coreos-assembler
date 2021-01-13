@@ -6,14 +6,8 @@ import (
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
-)
 
-const (
-	// sourceBin stores binary input
-	sourceBin = "source.bin"
-
-	// sourceSubPath is used when extracting binary inputs
-	sourceSubPath = "source"
+	"github.com/coreos/gangplank/constants"
 )
 
 // extractInputBinary processes the provided input stream as directed by BinaryBuildSource
@@ -36,7 +30,7 @@ func recieveInputBinary() (string, error) {
 
 	// If stdin is a file, then write it out to the same name
 	// as send from the OCP binary
-	path := filepath.Join(srcd, sourceBin)
+	path := filepath.Join(srcd, constants.SourceBin)
 	if len(source.AsFile) > 0 {
 		path = filepath.Join(srcd, source.AsFile)
 	}

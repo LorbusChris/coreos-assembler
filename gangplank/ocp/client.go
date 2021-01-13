@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/constants"
+	"github.com/coreos/gangplank/errors"
 )
 
 // Builder implements the Build
@@ -16,7 +18,7 @@ type Builder interface {
 var (
 	// cosaSrvDir is where the build directory should be. When the build API
 	// defines a contextDir then it will be used. In most cases this should be /srv
-	cosaSrvDir = defaultContextDir
+	cosaSrvDir = constants.DefaultContextDir
 )
 
 // NewBuilder returns a Builder. NewBuilder determines what
@@ -36,5 +38,5 @@ func NewBuilder(ctx clustercontext.ClusterContext) (Builder, error) {
 	if err == nil {
 		return bc, nil
 	}
-	return nil, ErrNoWorkFound
+	return nil, errors.ErrNoWorkFound
 }

@@ -8,8 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coreos/gangplank/cosa"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/constants"
+	"github.com/coreos/gangplank/cosa"
 )
 
 var (
@@ -51,7 +53,7 @@ func (r *Return) Run(ctx context.Context) error {
 	upload := make(map[string]string)
 
 	// Capture /srv/builds/builds.json
-	bJSONpath := filepath.Join(cosaSrvDir, "builds", cosa.CosaBuildsJSON)
+	bJSONpath := filepath.Join(cosaSrvDir, "builds", constants.CosaBuildsJSON)
 	if _, err := os.Stat(bJSONpath); err == nil {
 		upload["builds.json"] = bJSONpath
 	}

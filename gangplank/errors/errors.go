@@ -1,8 +1,17 @@
-package ocp
+package errors
 
 import "errors"
 
 var (
+	// ErrMetaFailsValidation is thrown on reading and invalid meta.json
+	ErrMetaFailsValidation = errors.New("meta.json failed schema validation")
+
+	// ErrMetaNotFound is thrown when a meta.json cannot be found
+	ErrMetaNotFound = errors.New("meta.json was not found")
+
+	// ErrNoBuildsFound is thrown when a build is missing
+	ErrNoBuildsFound = errors.New("no COSA builds found")
+
 	// ErrNoSuchCloud is returned when the cloud is unknown
 	ErrNoSuchCloud = errors.New("unknown cloud credential type")
 

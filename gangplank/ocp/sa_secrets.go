@@ -10,6 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/coreos/gangplank/constants"
 )
 
 /*
@@ -189,7 +191,7 @@ func (sm *secretMap) writeSecretFiles(toDir, name string, d map[string][]byte, r
 // automatically.
 func kubernetesSecretsSetup(ac *kubernetes.Clientset, ns, toDir string) ([]string, error) {
 	lo := metav1.ListOptions{
-		LabelSelector: secretLabelName,
+		LabelSelector: constants.SecretLabelName,
 		Limit:         100,
 	}
 
@@ -205,7 +207,7 @@ func kubernetesSecretsSetup(ac *kubernetes.Clientset, ns, toDir string) ([]strin
 		sName := secret.GetObjectMeta().GetName()
 		labels := secret.GetObjectMeta().GetLabels()
 		for k, v := range labels {
-			if k != secretLabelName {
+			if k != constants.SecretLabelName {
 				continue
 			}
 			m, ok := getSecretMapping(v)

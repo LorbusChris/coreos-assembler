@@ -5,17 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/pkg/errors"
-)
-
-const (
-	// CosaBuildsJSON is the COSA build.json file name
-	CosaBuildsJSON = "builds.json"
-)
-
-var (
-	// ErrNoBuildsFound is thrown when a build is missing
-	ErrNoBuildsFound = errors.New("no COSA builds found")
+	"github.com/coreos/gangplank/constants"
 )
 
 // buildsJSON represents the JSON that records the builds
@@ -30,7 +20,7 @@ type buildsJSON struct {
 }
 
 func getBuilds(dir string) (*buildsJSON, error) {
-	path := filepath.Join(dir, "builds", CosaBuildsJSON)
+	path := filepath.Join(dir, "builds", constants.CosaBuildsJSON)
 	d, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, ErrNoBuildsFound
