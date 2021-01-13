@@ -17,6 +17,7 @@ import (
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
 	"github.com/coreos/gangplank/errors"
+	"github.com/coreos/gangplank/remote"
 	"github.com/coreos/gangplank/spec"
 	"github.com/coreos/gangplank/util"
 )
@@ -30,7 +31,7 @@ var (
 // A WorkSpec is dispatched by a builder and is tightly coupled to
 // to the dispatching pod.
 type WorkSpec struct {
-	RemoteFiles   []*RemoteFile     `json:"remotefiles"`
+	RemoteFiles   []*remote.File    `json:"remotefiles"`
 	JobSpec       spec.JobSpec      `json:"jobspec"`
 	ExecuteStages []string          `json:"executeStages"`
 	APIBuild      *buildapiv1.Build `json:"apiBuild"`

@@ -1,4 +1,4 @@
-package ocp
+package remotefile
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func TestRemote(t *testing.T) {
 	}
 	defer m.kill()
 
-	r := RemoteFile{
+	r := File{
 		Bucket: testBucket,
 		Object: "test",
 		Minio:  m,

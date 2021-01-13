@@ -1,4 +1,4 @@
-package ocp
+package remote
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	"github.com/coreos/gangplank/minio"
 )
 
-// RemoteFile is an object to fetch from a remote server
-type RemoteFile struct {
+// File is an object to fetch from a remote server
+type File struct {
 	Bucket     string         `json:"bucket,omitempty"`
 	Object     string         `json:"object,omitempty"`
 	Minio      *minio.Server  `json:"remote,omitempty"`
@@ -25,7 +25,7 @@ type RemoteFile struct {
 }
 
 // WriteToPath fetches the remote file and writes it locally.
-func (r *RemoteFile) WriteToPath(ctx context.Context, path string) error {
+func (r *File) WriteToPath(ctx context.Context, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (r *RemoteFile) WriteToPath(ctx context.Context, path string) error {
 }
 
 // Extract decompresses the remote file to the path
-func (r *RemoteFile) Extract(ctx context.Context, path string) error {
+func (r *File) Extract(ctx context.Context, path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}

@@ -27,6 +27,7 @@ import (
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
 	"github.com/coreos/gangplank/minio"
+	"github.com/coreos/gangplank/remote"
 	"github.com/coreos/gangplank/spec"
 	"github.com/coreos/gangplank/util"
 )
@@ -166,7 +167,7 @@ func (bc *buildConfig) Exec(ctx clustercontext.ClusterContext) error {
 	}
 
 	// Prepare the remote files.
-	var remoteFiles []*RemoteFile
+	var remoteFiles []*remote.File
 	r, err := bc.ocpBinaryInput(m)
 	if err != nil {
 		return fmt.Errorf("failed to process binary input: %w", err)
@@ -249,7 +250,7 @@ binary build interface.`)
 		if buildID != "" {
 			mPath := filepath.Join(buildID, cosa.CosaMetaJSON)
 			for _, k := range []string{mPath, constants.CosaBuildsJSON} {
-				ws.RemoteFiles = append(ws.RemoteFiles, &RemoteFile{
+				ws.RemoteFiles = append(ws.RemoteFiles, &remote.File{
 					Bucket: "builds",
 					Minio:  m,
 					Object: k,
@@ -280,7 +281,7 @@ binary build interface.`)
 					"buildID":       buildID,
 				}).Info("required artifact")
 
-				r := &RemoteFile{
+				r := &remote.File{
 					Artifact: bArtifact,
 					Bucket:   "builds",
 					Minio:    m,
@@ -289,7 +290,7 @@ binary build interface.`)
 				ws.RemoteFiles = append(ws.RemoteFiles, r)
 			}
 		}
-		eVars, err := ws.getEnvVars()
+		eVars, err := ws.GetEnvVars()
 		if err != nil {
 			return err
 		}
@@ -336,8 +337,8 @@ func copyFile(src, dest string) error {
 
 // discoverStages supports the envVar and *.cosa.sh scripts as implied stages.
 // The envVar stage will be run first, followed by the `*.cosa.sh` scripts.
-func (bc *buildConfig) discoverStages(m *minio.Server) ([]*RemoteFile, error) {
-	var remoteFiles []*RemoteFile
+func (bc *buildConfig) discoverStages(m *minio.Server) ([]*remote.File, error) {
+	var remoteFiles []*remote.File
 
 	if bc.JobSpec.Job.StrictMode {
 		log.Info("Job strict mode is set, skipping automated stage discovery.")
@@ -378,7 +379,7 @@ func (bc *buildConfig) discoverStages(m *minio.Server) ([]*RemoteFile, error) {
 		// that.
 		remoteFiles = append(
 			remoteFiles,
-			&RemoteFile{
+			&remote.File{
 				Bucket: constants.SourceSubPath,
 				Object: dn,
 				Minio:  m,
@@ -407,8 +408,8 @@ func (bc *buildConfig) discoverStages(m *minio.Server) ([]*RemoteFile, error) {
 
 // ocpBinaryInput decompresses the binary input. If the binary input is a tarball
 // with an embedded JobSpec, its extracted, read and used.
-func (bc *buildConfig) ocpBinaryInput(m *minio.Server) ([]*RemoteFile, error) {
-	var remoteFiles []*RemoteFile
+func (bc *buildConfig) ocpBinaryInput(m *minio.Server) ([]*remote.File, error) {
+	var remoteFiles []*remote.File
 	bin, err := util.ReceiveInputBinary(cosaSrvDir, constants.SourceSubPath, apiBuild)
 	if err != nil {
 		return nil, err
@@ -428,7 +429,7 @@ func (bc *buildConfig) ocpBinaryInput(m *minio.Server) ([]*RemoteFile, error) {
 		}
 		dir, key := filepath.Split(bin)
 		bucket := filepath.Base(dir)
-		r := &RemoteFile{
+		r := &remote.File{
 			Bucket:     bucket,
 			Object:     key,
 			Minio:      m,
