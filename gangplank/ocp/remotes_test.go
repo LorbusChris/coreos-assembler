@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/minio"
 )
 
 func TestRemote(t *testing.T) {
@@ -32,8 +34,7 @@ func TestRemote(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	m := newMinioServer()
-	m.dir = srvd
+	m := minio.NewServer(srvd, "")
 	log.Infof("Testing with key %s:%s", m.AccessKey, m.SecretKey)
 
 	if err := m.start(ctx); err != nil {

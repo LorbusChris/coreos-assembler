@@ -9,15 +9,17 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/coreos/gangplank/cosa"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/minio"
 )
 
 // RemoteFile is an object to fetch from a remote server
 type RemoteFile struct {
 	Bucket     string         `json:"bucket,omitempty"`
 	Object     string         `json:"object,omitempty"`
-	Minio      *minioServer   `json:"remote,omitempty"`
+	Minio      *minio.Server  `json:"remote,omitempty"`
 	Compressed bool           `json:"comptempty"`
 	Artifact   *cosa.Artifact `json:"artifact,omitempty"`
 }
@@ -59,7 +61,7 @@ func (r *RemoteFile) Extract(ctx context.Context, path string) error {
 	if _, err := tmpf.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("double oof, srly? %w", err)
 	}
-	return decompress(tmpf, cosaSrvDir)
+	return decompress(tmpf, path)
 }
 
 // decompress takes an open file and extracts its to directory.

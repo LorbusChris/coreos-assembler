@@ -26,6 +26,7 @@ import (
 	"github.com/coreos/gangplank/clustercontext"
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/minio"
 	"github.com/coreos/gangplank/spec"
 	"github.com/coreos/gangplank/util"
 )
@@ -154,7 +155,7 @@ func (bc *buildConfig) Exec(ctx clustercontext.ClusterContext) error {
 	}
 
 	// Define, but do not start minio.
-	m := newMinioServer()
+	m := minio.NewServer(cosaSrvDir)
 	m.dir = cosaSrvDir
 	m.Host = bc.HostIP
 
@@ -335,7 +336,7 @@ func copyFile(src, dest string) error {
 
 // discoverStages supports the envVar and *.cosa.sh scripts as implied stages.
 // The envVar stage will be run first, followed by the `*.cosa.sh` scripts.
-func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
+func (bc *buildConfig) discoverStages(m *minio.Server) ([]*RemoteFile, error) {
 	var remoteFiles []*RemoteFile
 
 	if bc.JobSpec.Job.StrictMode {
@@ -406,7 +407,7 @@ func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
 
 // ocpBinaryInput decompresses the binary input. If the binary input is a tarball
 // with an embedded JobSpec, its extracted, read and used.
-func (bc *buildConfig) ocpBinaryInput(m *minioServer) ([]*RemoteFile, error) {
+func (bc *buildConfig) ocpBinaryInput(m *minio.Server) ([]*RemoteFile, error) {
 	var remoteFiles []*RemoteFile
 	bin, err := util.ReceiveInputBinary(cosaSrvDir, constants.SourceSubPath, apiBuild)
 	if err != nil {

@@ -1,4 +1,4 @@
-package ocp
+package minio
 
 import (
 
@@ -46,8 +46,8 @@ func init() {
 	}
 }
 
-// minioServer describes a Minio S3 Object stoarge to start.
-type minioServer struct {
+// Server describes a Minio S3 Object stoarge to start.
+type Server struct {
 	AccessKey    string `json:"accesskey"`
 	SecretKey    string `json:"secretkey"`
 	Host         string `json:"host"`
@@ -57,16 +57,16 @@ type minioServer struct {
 	cmd          *exec.Cmd
 }
 
-// newMinioSever defines an ephemeral minio config. To prevent random pods/people
+// NewServer defines an ephemeral minio config. To prevent random pods/people
 // accessing or relying on the server, we use entirely random keys.
-func newMinioServer() *minioServer {
+func NewServer(cosaSrvDir, host string) *Server {
 	minioAccessKey, _ := randomString(12)
 	minioSecretKey, _ := randomString(12)
 
-	return &minioServer{
+	return &Server{
 		AccessKey: minioAccessKey,
 		SecretKey: minioSecretKey,
-		Host:      "",
+		Host:      host,
 		Port:      9000,
 		dir:       cosaSrvDir,
 		minioOptions: minio.Options{
@@ -78,7 +78,7 @@ func newMinioServer() *minioServer {
 }
 
 // GetClient returns a Minio Client
-func (m *minioServer) client() (*minio.Client, error) {
+func (m *Server) client() (*minio.Client, error) {
 	return minio.New(fmt.Sprintf("%s:%d", m.Host, m.Port),
 		&minio.Options{
 			Creds:  credentials.NewStaticV4(m.AccessKey, m.SecretKey, ""),
@@ -88,8 +88,8 @@ func (m *minioServer) client() (*minio.Client, error) {
 	)
 }
 
-// start a MinioServer based on the configuration.
-func (m *minioServer) start(ctx context.Context) error {
+// start a Server based on the configuration.
+func (m *Server) start(ctx context.Context) error {
 	// COSA_POD_ID should be set via the BuildConfig
 	// using a pod reference, i.e:
 	// env:
@@ -163,7 +163,7 @@ func (m *minioServer) start(ctx context.Context) error {
 }
 
 // kill terminates the minio server.
-func (m *minioServer) kill() {
+func (m *Server) kill() {
 	if m.cmd == nil {
 		return
 	}
@@ -192,7 +192,7 @@ func randomString(n int) (string, error) {
 	return string(bits), nil
 }
 
-func (m *minioServer) ensureBucketExists(ctx context.Context, bucket string) error {
+func (m *Server) ensureBucketExists(ctx context.Context, bucket string) error {
 	mc, err := m.client()
 	if err != nil {
 		return err
@@ -214,7 +214,7 @@ func (m *minioServer) ensureBucketExists(ctx context.Context, bucket string) err
 }
 
 // fetcher retrieves an object from a Minio server
-func (m *minioServer) fetcher(ctx context.Context, bucket, object string, dest io.Writer) error {
+func (m *Server) fetcher(ctx context.Context, bucket, object string, dest io.Writer) error {
 	if m.Host == "" {
 		return errors.New("host is undefined")
 	}
@@ -240,8 +240,8 @@ func (m *minioServer) fetcher(ctx context.Context, bucket, object string, dest i
 	return err
 }
 
-// putter uploads the contents of an io.Reader to a remote MinioServer
-func (m *minioServer) putter(ctx context.Context, bucket, object, fpath string, overwrite bool) error {
+// putter uploads the contents of an io.Reader to a remote Server
+func (m *Server) putter(ctx context.Context, bucket, object, fpath string, overwrite bool) error {
 	if err := m.ensureBucketExists(ctx, bucket); err != nil {
 		return fmt.Errorf("unable to validate %s bucket exists: %w", bucket, err)
 	}

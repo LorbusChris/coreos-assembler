@@ -1,4 +1,4 @@
-package ocp
+package minio
 
 import (
 	"context"
@@ -26,9 +26,7 @@ func TestFiler(t *testing.T) {
 	defer cancel()
 	defer c.Done()
 
-	m := newMinioServer()
-	m.Host = "localhost"
-	m.dir = tmpd
+	m := NewServer(tmpd, "localhost")
 	if err := m.start(c); err != nil {
 		t.Fatalf("Failed to start minio: %v", err)
 	}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/minio"
 )
 
 var (
@@ -21,9 +22,9 @@ var (
 
 // Return describes the location of where to send results.
 type Return struct {
-	Minio     *minioServer `json:"remote"`
-	Bucket    string       `json:"bucket"`
-	Overwrite bool         `json:"overwrite"`
+	Minio     *minio.Server `json:"remote"`
+	Bucket    string             `json:"bucket"`
+	Overwrite bool               `json:"overwrite"`
 
 	// ArtifactTypes will return only artifacts that known and defined
 	// For example []string{"aws","azure"}
