@@ -8,6 +8,7 @@ import (
 
 	"github.com/coreos/gangplank/clustercontext"
 	"github.com/coreos/gangplank/ocp"
+	"github.com/coreos/gangplank/pod"
 )
 
 const cosaDefaultImage = "quay.io/coreos-assembler/coreos-assembler:latest"
@@ -70,12 +71,12 @@ func runPod(c *cobra.Command, args []string) {
 
 	clusterCtx := clustercontext.NewClusterContext(ctx, cluster)
 
-	pb, err := ocp.NewPodBuilder(clusterCtx, cosaOverrideImage, serviceAccount, specFile, cosaWorkDir)
+	podBuilder, err := pod.NewBuilder(clusterCtx, cosaOverrideImage, serviceAccount, specFile, cosaWorkDir)
 	if err != nil {
 		log.Fatalf("failed to define builder pod: %v", err)
 	}
 
-	if err := pb.Exec(clusterCtx); err != nil {
+	if err := podBuilder.Exec(clusterCtx); err != nil {
 		log.Fatalf("failed to execute CI builder: %v", err)
 	}
 }

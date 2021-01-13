@@ -1,4 +1,4 @@
-package ocp
+package pod
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ import (
 )
 
 /*
-	A ClusterPodBuilder is a ci interface for running Gangplank as part
+	The Pod Builder is an interface for running Gangplank as part
 	of a CI system (i.e. Jenkins) while benefiting from the BuildConfig
 	niceties.
 
@@ -53,16 +53,17 @@ type podBuild struct {
 	workDir          string
 }
 
-// PodBuilder is the manual/unbounded Build interface.
-// A PodBuilder uses a build.openshift.io/v1 Build interface
+// Builder is the manual/unbounded Pod Build interface.
+// It uses a build.openshift.io/v1 Build interface
 // to use the exact same code path between the two.
+type Builder interface {
 	Exec(ctx clustercontext.ClusterContext) error
 }
 
 var (
 	// cli is a Builder (and a poor one at that too...)
-	// While a ClusterPodBuilder is a Builder, we treat it seperately.
-	_ = PodBuilder(&podBuild{})
+	// While the Pod Builder is a Builder, we treat it seperately.
+	_ = Builder(&podBuild{})
 )
 
 const (
@@ -77,7 +78,8 @@ func (pb *podBuild) Exec(ctx clustercontext.ClusterContext) error {
 	return pb.bc.Exec(ctx)
 }
 
-func NewPodBuilder(ctx clustercontext.ClusterContext, image, serviceAccount, jsF, workDir string) (Builder, error) {
+// NewBuilder returns a pod builder ready for execution.
+func NewBuilder(ctx clustercontext.ClusterContext, image, serviceAccount, jsF, workDir string) (Builder, error) {
 	// Directly inject the jobspec
 	js, err := spec.JobSpecFromFile(jsF)
 	if jsF != "" && err != nil {
