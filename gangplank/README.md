@@ -109,12 +109,12 @@ Where `cosa_oc` is the wrapper that:
 - creates a `build.tar` containing the `JobSpec`, `build.steps`
 - calls `oc start-build bc/cosa-priv --from-archive=build.tar --follow=true`
 
-In this world, the Secrets would exist outside of Jenkins and would be stored in the OpenShift environment and referenced in the `buildConfig` itself. Gangplank supports the OpenShift BuildAPI and the Kubernetes APIS.
+In this world, the Secrets would exist outside of Jenkins and would be stored in the OpenShift environment and referenced in the `BuildConfig` itself. Gangplank supports the OpenShift BuildAPI and the Kubernetes APIS.
 - unpack `build.tar`
 - find the `jobspec` and the `build.steps`
 - execute the steps
 
-Since the builds are using `buildConfigs`, each "build" is repeatable.
+Since the builds are using `BuildConfigs`, each "build" is repeatable.
 
 Ideally, there would be BuildConfigs for:
 - privileged execution for builds that need direct /dev/kvm access
@@ -137,11 +137,11 @@ For those unlucky enough to obtain their internet access from a major US-based c
 1. do something else while 20G image is slurped up at 250Kbs...
 1. repeats steps 2-5
 
-By having COSA as a `buildConfig`, we can now have a `cosa remote` command that:
+By having COSA as a `BuildConfig`, we can now have a `cosa remote` command that:
 - creates a `devel.tar` of `src`, `overrides`, and local COSA hacks with a JobSpec and `build.steps`
 - call `oc start-build bc/cosa-priv --from-archive=devel.tar --env=DEVELOPER_MODE=1 --follow=true`
 
-When the buildConfig starts, it would upack `devel.tar` and then exec into the developer's local COSA environment running remotely. This would save the developer from:
+When the BuildConfig starts, it would upack `devel.tar` and then exec into the developer's local COSA environment running remotely. This would save the developer from:
 1. having to get their own credentials
 1. the build happens close to the source
 1. when pushing the build, the developer's in-house broadband is not used

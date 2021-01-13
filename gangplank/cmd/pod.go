@@ -6,9 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/coreos/gangplank/clustercontext"
-	"github.com/coreos/gangplank/ocp"
-	"github.com/coreos/gangplank/pod"
+	"github.com/coreos/gangplank/pkg/clustercontext"
+	"github.com/coreos/gangplank/pkg/pod"
 )
 
 const cosaDefaultImage = "quay.io/coreos-assembler/coreos-assembler:latest"
@@ -56,10 +55,10 @@ func init() {
 func runPod(c *cobra.Command, args []string) {
 	defer cancel()
 
-	cluster := ocp.NewCluster(true, "")
+	cluster := clustercontext.NewCluster(true, "")
 
 	if cosaViaPodman {
-		cluster = ocp.NewCluster(false, "")
+		cluster = clustercontext.NewCluster(false, "")
 		cluster.SetPodman(cosaSrvDir)
 		if cosaOverrideImage == "" {
 			cosaOverrideImage = cosaDefaultImage

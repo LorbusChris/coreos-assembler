@@ -11,7 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	jobspec "github.com/coreos/gangplank/spec"
+	jobspec "github.com/coreos/gangplank/pkg/spec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
