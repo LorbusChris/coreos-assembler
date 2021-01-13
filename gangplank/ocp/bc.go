@@ -22,6 +22,7 @@ import (
 	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
 
+	bws "github.com/coreos/gangplank/builder-workspec"
 	"github.com/coreos/gangplank/clustercontext"
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
@@ -222,7 +223,7 @@ binary build interface.`)
 
 	log.Infof("Job will be run over %d pods", len(stageCmdIDs))
 	for n, s := range stageCmdIDs {
-		ws := &workSpec{
+		ws := &bws.WorkSpec{
 			APIBuild:      apiBuild,
 			ExecuteStages: s,
 			JobSpec:       bc.JobSpec,

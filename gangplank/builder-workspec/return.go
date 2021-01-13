@@ -1,4 +1,4 @@
-package ocp
+package builder-workspec
 
 import (
 	"context"
@@ -39,7 +39,7 @@ type Returner interface {
 }
 
 // Run executes the report by walking the build path.
-func (r *Return) Run(ctx context.Context) error {
+func (r *Return) Run(ctx context.Context, cosaSrvDir string) error {
 	if r.Minio == nil {
 		return nil
 	}

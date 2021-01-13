@@ -1,4 +1,4 @@
-package ocp
+package builder-workspec
 
 import (
 	"encoding/json"
@@ -22,14 +22,14 @@ import (
 )
 
 var (
-	// workSpec is a Builder.
-	_ = Builder(&workSpec{})
+	// WorkSpec is a Builder.
+	_ = Builder(&WorkSpec{})
 )
 
-// workSpec define job for remote worker to do
-// A workSpec is dispatched by a builder and is tightly coupled to
+// WorkSpec define job for remote worker to do
+// A WorkSpec is dispatched by a builder and is tightly coupled to
 // to the dispatching pod.
-type workSpec struct {
+type WorkSpec struct {
 	RemoteFiles   []*RemoteFile     `json:"remotefiles"`
 	JobSpec       spec.JobSpec      `json:"jobspec"`
 	ExecuteStages []string          `json:"executeStages"`
@@ -42,14 +42,14 @@ const (
 	CosaWorkPodEnvVarName = "COSA_WORK_POD_JSON"
 )
 
-// newWorkSpec returns a workspec from the environment
-func newWorkSpec(ctx clustercontext.ClusterContext) (*workSpec, error) {
+// NewBuilder returns a workspec builder from the environment
+func NewBuilder(ctx clustercontext.ClusterContext, cosaSrvDir string) (*WorkSpec, error) {
 	w, ok := os.LookupEnv(CosaWorkPodEnvVarName)
 	if !ok {
 		return nil, errors.ErrNotWorkPod
 	}
 	r := strings.NewReader(w)
-	ws := workSpec{}
+	ws := WorkSpec{}
 	if err := ws.Unmarshal(r); err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func newWorkSpec(ctx clustercontext.ClusterContext) (*workSpec, error) {
 	return &ws, nil
 }
 
-// Unmarshal decodes an io.Reader to a workSpec
-func (ws *workSpec) Unmarshal(r io.Reader) error {
+// Unmarshal decodes an io.Reader to a WorkSpec
+func (ws *WorkSpec) Unmarshal(r io.Reader) error {
 	d, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
@@ -78,12 +78,12 @@ func (ws *workSpec) Unmarshal(r io.Reader) error {
 }
 
 // Marshal returns the JSON of a WorkSpec.
-func (ws *workSpec) Marshal() ([]byte, error) {
+func (ws *WorkSpec) Marshal() ([]byte, error) {
 	return json.Marshal(ws)
 }
 
 // Exec executes the work spec tasks.
-func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
+func (ws *WorkSpec) Exec(ctx clustercontext.ClusterContext, cosaSrvDir string) error {
 	envVars := os.Environ()
 
 	// Check stdin for binary input
@@ -171,7 +171,7 @@ func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 	// and /dev/termination-log.
 	defer func() {
 		if ws.Return != nil {
-			err := ws.Return.Run(ctx)
+			err := ws.Return.Run(ctx, cosaSrvDir)
 			log.WithError(err).Info("processed uploads")
 		}
 
@@ -209,10 +209,10 @@ func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 	return e
 }
 
-// getEnvVars returns the envVars to be exposed to the worker pod.
-// When `newWorkSpec` is called, the envVar will read the embedded string JSON
+// GetEnvVars returns the envVars to be exposed to the worker pod.
+// When the NewBuilder function is called, the envVar will read the embedded string JSON
 // and the worker will get its configuration.
-func (ws *workSpec) getEnvVars() ([]v1.EnvVar, error) {
+func (ws *WorkSpec) GetEnvVars() ([]v1.EnvVar, error) {
 	d, err := ws.Marshal()
 	if err != nil {
 		return nil, err

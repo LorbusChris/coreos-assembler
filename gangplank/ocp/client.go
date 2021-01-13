@@ -5,6 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	workspec "github.com/coreos/gangplank/builder-workspec"
 	"github.com/coreos/gangplank/clustercontext"
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/errors"
@@ -30,7 +31,7 @@ func NewBuilder(ctx clustercontext.ClusterContext) (Builder, error) {
 		inCluster = false
 	}
 
-	ws, err := newWorkSpec(ctx)
+	ws, err := workspec.NewBuilder(ctx)
 	if err == nil {
 		return ws, nil
 	}

@@ -1,4 +1,4 @@
-package ocp
+package builder-workspec
 
 import (
 	"fmt"
@@ -185,7 +185,7 @@ func (sm *secretMap) writeSecretFiles(toDir, name string, d map[string][]byte, r
 	return nil
 }
 
-// kubernetesSecretSetup looks for matching secrets in the environment matching
+// kubernetesSecretsSetup looks for matching secrets in the environment matching
 // 'coreos-assembler.coreos.com/secret=k' and then maps the secret
 // automatically in. "k" must be in the "known" secrets type to be mapped
 // automatically.
