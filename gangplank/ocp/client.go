@@ -4,11 +4,13 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/clustercontext"
 )
 
 // Builder implements the Build
 type Builder interface {
-	Exec(ctx ClusterContext) error
+	Exec(ctx clustercontext.ClusterContext) error
 }
 
 var (
@@ -19,7 +21,7 @@ var (
 
 // NewBuilder returns a Builder. NewBuilder determines what
 // "Builder" to return.
-func NewBuilder(ctx ClusterContext) (Builder, error) {
+func NewBuilder(ctx clustercontext.ClusterContext) (Builder, error) {
 	inCluster := true
 	if _, ok := os.LookupEnv(localPodEnvVar); ok {
 		log.Infof("EnvVar %s defined, using local pod mode", localPodEnvVar)
@@ -30,7 +32,7 @@ func NewBuilder(ctx ClusterContext) (Builder, error) {
 	if err == nil {
 		return ws, nil
 	}
-	bc, err := newBC(ctx, &Cluster{inCluster: inCluster})
+	bc, err := newBC(ctx, &clustercontext.Cluster{inCluster: inCluster})
 	if err == nil {
 		return bc, nil
 	}

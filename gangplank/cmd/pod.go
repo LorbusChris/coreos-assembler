@@ -3,9 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/coreos/gangplank/ocp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/ocp"
 )
 
 const cosaDefaultImage = "quay.io/coreos-assembler/coreos-assembler:latest"
@@ -66,7 +68,7 @@ func runPod(c *cobra.Command, args []string) {
 		}
 	}
 
-	clusterCtx := ocp.NewClusterContext(ctx, cluster)
+	clusterCtx := clustercontext.NewClusterContext(ctx, cluster)
 
 	pb, err := ocp.NewPodBuilder(clusterCtx, cosaOverrideImage, serviceAccount, specFile, cosaWorkDir)
 	if err != nil {

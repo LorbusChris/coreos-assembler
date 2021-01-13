@@ -19,10 +19,12 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coreos/gangplank/cosa"
-	"github.com/coreos/gangplank/spec"
 	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/spec"
 )
 
 var (
@@ -57,11 +59,11 @@ type buildConfig struct {
 	// Internal copy of the JobSpec
 	JobSpec spec.JobSpec
 
-	ClusterCtx ClusterContext
+	ClusterCtx clustercontext.ClusterContext
 }
 
 // newBC accepts a context and returns a buildConfig
-func newBC(ctx context.Context, c *Cluster) (*buildConfig, error) {
+func newBC(ctx context.Context, c *clustercontext.Cluster) (*buildConfig, error) {
 	var v buildConfig
 	rv := reflect.TypeOf(v)
 	for i := 0; i < rv.NumField(); i++ {
@@ -82,8 +84,8 @@ func newBC(ctx context.Context, c *Cluster) (*buildConfig, error) {
 	}
 
 	// Add the ClusterContext to the BuildConfig
-	v.ClusterCtx = NewClusterContext(ctx, *c.toKubernetesCluster())
-	ac, ns, kubeErr := GetClient(v.ClusterCtx)
+	v.ClusterCtx = clustercontext.NewClusterContext(ctx, *c.toKubernetesCluster())
+	ac, ns, kubeErr := clustercontext.GetClient(v.ClusterCtx)
 	if kubeErr != nil {
 		log.WithError(kubeErr).Info("Running without a cluster client")
 	}
@@ -144,7 +146,7 @@ func newBC(ctx context.Context, c *Cluster) (*buildConfig, error) {
 }
 
 // Exec executes the command using the closure for the commands
-func (bc *buildConfig) Exec(ctx ClusterContext) error {
+func (bc *buildConfig) Exec(ctx clustercontext.ClusterContext) error {
 	curD, _ := os.Getwd()
 	defer func(c string) { _ = os.Chdir(c) }(curD)
 

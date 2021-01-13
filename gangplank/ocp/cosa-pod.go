@@ -25,7 +25,6 @@ import (
 	cspec "github.com/opencontainers/runtime-spec/specs-go"
 	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,6 +34,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	kubeJSON "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/tools/remotecommand"
+
+	"github.com/coreos/gangplank/clustercontext"
 )
 
 const (
@@ -104,7 +105,7 @@ var (
 // cosaPod is a COSA pod
 type cosaPod struct {
 	apiBuild   *buildapiv1.Build
-	clusterCtx ClusterContext
+	clusterCtx clustercontext.ClusterContext
 
 	ocpInitCommand  []string
 	ocpRequirements v1.ResourceList
@@ -118,7 +119,7 @@ type cosaPod struct {
 
 // CosaPodder create COSA capable pods.
 type CosaPodder interface {
-	WorkerRunner(ctx ClusterContext, envVar []v1.EnvVar) error
+	WorkerRunner(ctx clustercontext.ClusterContext, envVar []v1.EnvVar) error
 }
 
 // a cosaPod is a CosaPodder
@@ -126,7 +127,7 @@ var _ = CosaPodder(&cosaPod{})
 
 // NewCosaPodder creates a CosaPodder
 func NewCosaPodder(
-	ctx ClusterContext,
+	ctx clustercontext.ClusterContext,
 	apiBuild *buildapiv1.Build,
 	index int) (CosaPodder, error) {
 
@@ -250,8 +251,8 @@ export PATH=/usr/sbin:/usr/bin
 }
 
 // WorkerRunner runs a worker pod and watches until finished
-func (cp *cosaPod) WorkerRunner(ctx ClusterContext, envVars []v1.EnvVar) error {
-	cluster, err := GetCluster(ctx)
+func (cp *cosaPod) WorkerRunner(ctx clustercontext.ClusterContext, envVars []v1.EnvVar) error {
+	cluster, err := clustercontext.GetCluster(ctx)
 	if err != nil {
 		return err
 	}
@@ -261,8 +262,8 @@ func (cp *cosaPod) WorkerRunner(ctx ClusterContext, envVars []v1.EnvVar) error {
 	return podmanRunner(ctx, cp, envVars)
 }
 
-func clusterRunner(ctx ClusterContext, cp *cosaPod, envVars []v1.EnvVar) error {
-	cs, ns, err := GetClient(cp.clusterCtx)
+func clusterRunner(ctx clustercontext.ClusterContext, cp *cosaPod, envVars []v1.EnvVar) error {
+	cs, ns, err := clustercontext.GetClient(cp.clusterCtx)
 	if err != nil {
 		return err
 	}
@@ -438,7 +439,7 @@ func (cp *cosaPod) streamPodLogs(logging *bool, pod *v1.Pod, container string) e
 //nolint
 func encodeToJSON(pod *v1.Pod, envVars []v1.EnvVar, jsonType string) (string, error) {
 	scheme := runtime.NewScheme()
-	if err := corev1.AddToScheme(scheme); err != nil {
+	if err := v1.AddToScheme(scheme); err != nil {
 		return "", err
 	}
 
@@ -482,7 +483,7 @@ func newNoopFileWriterCloser(f *os.File) *outWriteCloser {
 // podmanRunner runs the work in a Podman container using workDir as `/srv`
 // `podman kube play` does not work well due to permission mappings; there is
 // no way to do id mappings.
-func podmanRunner(ctx ClusterContext, cp *cosaPod, envVars []v1.EnvVar) error {
+func podmanRunner(ctx clustercontext.ClusterContext, cp *cosaPod, envVars []v1.EnvVar) error {
 	// Populate pod envvars
 	envVars = append(envVars, v1.EnvVar{Name: localPodEnvVar, Value: "1"})
 	mapEnvVars := map[string]string{
@@ -519,7 +520,7 @@ func podmanRunner(ctx ClusterContext, cp *cosaPod, envVars []v1.EnvVar) error {
 	}
 
 	// Get the StdIO from the cluster context.
-	clusterCtx, err := GetCluster(ctx)
+	clusterCtx, err := clustercontext.GetCluster(ctx)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package ocp
+package clustercontext
 
 import (
 	"context"
@@ -113,15 +113,15 @@ func GetClient(ctx ClusterContext) (*kubernetes.Clientset, string, error) {
 	}
 
 	if c.inCluster {
-		c.cs, c.nameSpace, err = k8sInClusterClient()
+		c.cs, c.nameSpace, err = K8sInClusterClient()
 	}
 
 	return c.cs, c.nameSpace, err
 }
 
-// k8sInClusterClient opens an in-cluster Kubernetes API client.
+// K8sInClusterClient opens an in-cluster Kubernetes API client.
 // The running pod must have a service account defined in the PodSpec.
-func k8sInClusterClient() (*kubernetes.Clientset, string, error) {
+func K8sInClusterClient() (*kubernetes.Clientset, string, error) {
 	_, kport := os.LookupEnv("KUBERNETES_SERVICE_PORT")
 	_, khost := os.LookupEnv("KUBERNETES_SERVICE_HOST")
 	if !khost || !kport {

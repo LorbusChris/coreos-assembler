@@ -9,13 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/gangplank/spec"
 	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+
+	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/spec"
 )
 
 /*
@@ -40,7 +41,7 @@ type podBuild struct {
 	bc       *buildConfig
 	js       *spec.JobSpec
 
-	clusterCtx ClusterContext
+	clusterCtx clustercontext.ClusterContext
 	pod        *v1.Pod
 
 	hostname         string
@@ -55,8 +56,7 @@ type podBuild struct {
 // PodBuilder is the manual/unbounded Build interface.
 // A PodBuilder uses a build.openshift.io/v1 Build interface
 // to use the exact same code path between the two.
-type PodBuilder interface {
-	Exec(ctx ClusterContext) error
+	Exec(ctx clustercontext.ClusterContext) error
 }
 
 var (
@@ -72,13 +72,12 @@ const (
 )
 
 // Exec start the unbounded build.
-func (pb *podBuild) Exec(ctx ClusterContext) error {
+func (pb *podBuild) Exec(ctx clustercontext.ClusterContext) error {
 	log.Info("Executing unbounded builder")
 	return pb.bc.Exec(ctx)
 }
 
-// NewPodBuilder returns a ClusterPodBuilder ready for execution.
-func NewPodBuilder(ctx ClusterContext, image, serviceAccount, jsF, workDir string) (PodBuilder, error) {
+func NewPodBuilder(ctx clustercontext.ClusterContext, image, serviceAccount, jsF, workDir string) (Builder, error) {
 	// Directly inject the jobspec
 	js, err := spec.JobSpecFromFile(jsF)
 	if jsF != "" && err != nil {
@@ -112,7 +111,7 @@ func NewPodBuilder(ctx ClusterContext, image, serviceAccount, jsF, workDir strin
 
 	// Create the buildConfig object
 	os.Setenv("BUILD", pbb)
-	bc, err := newBC(ctx, &Cluster{})
+	bc, err := newBC(ctx, &clustercontext.Cluster{})
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +125,7 @@ func NewPodBuilder(ctx ClusterContext, image, serviceAccount, jsF, workDir strin
 // setInCluster does the nessasary setup for unbounded builder running as
 // an in-cluster build.
 func (pb *podBuild) setInCluster() error {
-	c, err := GetCluster(pb.clusterCtx)
+	c, err := clustercontext.GetCluster(pb.clusterCtx)
 	if err == nil && (c.podman || !c.inCluster) {
 		return nil
 	}
@@ -143,7 +142,7 @@ func (pb *podBuild) setInCluster() error {
 	pb.hostname = hostname
 
 	// Open the Kubernetes Client
-	ac, pn, err := k8sInClusterClient()
+	ac, pn, err := clustercontext.K8sInClusterClient()
 	if err != nil {
 		return fmt.Errorf("failed create a kubernetes client: %w", err)
 	}
@@ -218,7 +217,7 @@ func (pb *podBuild) generateAPIBuild() error {
 	a.Spec.ServiceAccount = pb.serviceAccount
 	a.Spec.Strategy = buildapiv1.BuildStrategy{}
 	a.Spec.Strategy.CustomStrategy = new(buildapiv1.CustomBuildStrategy)
-	a.Spec.Strategy.CustomStrategy.From = corev1.ObjectReference{
+	a.Spec.Strategy.CustomStrategy.From = v1.ObjectReference{
 		Name: pb.image,
 	}
 	a.Spec.Source = buildapiv1.BuildSource{

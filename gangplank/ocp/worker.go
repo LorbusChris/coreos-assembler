@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coreos/gangplank/cosa"
-	"github.com/coreos/gangplank/spec"
 	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+
+	"github.com/coreos/gangplank/clustercontext"
+	"github.com/coreos/gangplank/cosa"
+	"github.com/coreos/gangplank/spec"
 )
 
 var (
@@ -38,7 +40,7 @@ const (
 )
 
 // newWorkSpec returns a workspec from the environment
-func newWorkSpec(ctx ClusterContext) (*workSpec, error) {
+func newWorkSpec(ctx clustercontext.ClusterContext) (*workSpec, error) {
 	w, ok := os.LookupEnv(CosaWorkPodEnvVarName)
 	if !ok {
 		return nil, ErrNotWorkPod
@@ -78,7 +80,7 @@ func (ws *workSpec) Marshal() ([]byte, error) {
 }
 
 // Exec executes the work spec tasks.
-func (ws *workSpec) Exec(ctx ClusterContext) error {
+func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 	envVars := os.Environ()
 
 	// Check stdin for binary input
@@ -110,7 +112,7 @@ func (ws *workSpec) Exec(ctx ClusterContext) error {
 	}
 
 	// Setup the incluster client
-	ac, pn, err := k8sInClusterClient()
+	ac, pn, err := clustercontext.K8sInClusterClient()
 	if err == ErrNotInCluster {
 		log.Info("Worker is out-of-clstuer, no secrets will be available")
 	} else if err != nil {
