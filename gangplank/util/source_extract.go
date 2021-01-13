@@ -1,20 +1,21 @@
-package ocp
+package util
 
 import (
 	"io"
 	"os"
 	"path/filepath"
 
+	buildapiv1 "github.com/openshift/api/build/v1"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/coreos/gangplank/constants"
 )
 
-// extractInputBinary processes the provided input stream as directed by BinaryBuildSource
+// ReceiveInputBinary processes the provided input stream as directed by BinaryBuildSource
 // into dir. OpenShift sends binary builds over stdin. To make our life easier,
 // use the OpenShift API to process the input. Returns the name of the file
 // written.
-func recieveInputBinary() (string, error) {
+func ReceiveInputBinary(cosaSrvDir, sourceSubPath string, apiBuild *buildapiv1.Build) (string, error) {
 	srcd := filepath.Join(cosaSrvDir, sourceSubPath)
 	if err := os.MkdirAll(srcd, 0777); err != nil {
 		return "", err

@@ -18,6 +18,7 @@ import (
 	"github.com/coreos/gangplank/cosa"
 	"github.com/coreos/gangplank/errors"
 	"github.com/coreos/gangplank/spec"
+	"github.com/coreos/gangplank/util"
 )
 
 var (
@@ -86,7 +87,7 @@ func (ws *workSpec) Exec(ctx clustercontext.ClusterContext) error {
 	envVars := os.Environ()
 
 	// Check stdin for binary input
-	inF, err := recieveInputBinary()
+	inF, err := util.ReceiveInputBinary(cosaSrvDir, constants.SourceSubPath, ws.APIBuild)
 	if err == nil {
 		log.WithField("file", inF).Info("Worker recieved binary input")
 

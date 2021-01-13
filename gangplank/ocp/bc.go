@@ -26,6 +26,7 @@ import (
 	"github.com/coreos/gangplank/constants"
 	"github.com/coreos/gangplank/cosa"
 	"github.com/coreos/gangplank/spec"
+	"github.com/coreos/gangplank/util"
 )
 
 var (
@@ -406,7 +407,7 @@ func (bc *buildConfig) discoverStages(m *minioServer) ([]*RemoteFile, error) {
 // with an embedded JobSpec, its extracted, read and used.
 func (bc *buildConfig) ocpBinaryInput(m *minioServer) ([]*RemoteFile, error) {
 	var remoteFiles []*RemoteFile
-	bin, err := recieveInputBinary()
+	bin, err := util.ReceiveInputBinary(cosaSrvDir, constants.SourceSubPath, apiBuild)
 	if err != nil {
 		return nil, err
 	}
